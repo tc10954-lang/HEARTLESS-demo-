@@ -56,8 +56,8 @@ function drawBattle() {
   ctx.strokeStyle = spareReady ? '#ff0' : (rage ? '#f44' : '#fff'); ctx.lineWidth = 4;
   ctx.strokeRect(state === 'DODGE' ? 230 : 80, 230, state === 'DODGE' ? 180 : 480, 160);
 
-  if (state === 'MENU' || state === 'WIN' || state === 'LOSE') {
-    ctx.fillStyle = spareReady && state === 'MENU' ? '#ff0' : '#fff';
+  if (state === 'MENU' || state === 'KILL_WIN' || state === 'SPARE_WIN' || state === 'LOSE') {
+    ctx.fillStyle = (spareReady && state === 'MENU') || state === 'SPARE_WIN' ? '#ff0' : '#fff';
     ctx.font = '18px Courier New'; ctx.fillText(battleText, 95, 280);
   } else if (state === 'ACT_MENU') {
     ['* Check', '* Reason (' + enemy.reasoned + '/2)', '* Lower Weapon'].forEach((act, i) => {

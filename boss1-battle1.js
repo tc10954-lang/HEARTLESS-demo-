@@ -2,7 +2,7 @@ let turnTimer = 0, selectedOption = 0, actOption = 0, attackBarX = 120;
 let player = { x: 313, y: 303, size: 14, speed: 3.8, hp: 20, invuln: 0 };
 let enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false };
 let bullets = [], telegraphs = [];
-let battleText = "* THE HEARTLESS blocks the gate!";
+let battleText = "* THE DOGBOY blocks the gate!";
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
@@ -16,8 +16,8 @@ window.addEventListener('keydown', (e) => {
       else if (selectedOption === 1) { state = 'ACT_MENU'; actOption = 0; }
       else if (selectedOption === 2) { player.hp = Math.min(20, player.hp + 9); battleText = "* Soul Shard used. +9 HP!"; startEnemyTurn(); }
       else if (selectedOption === 3) {
-        if (enemy.mercy >= 3) { state = 'WIN'; battleText = "* YOU SPARED THE HEARTLESS! Press R to replay."; }
-        else { battleText = "* THE HEARTLESS isn't ready to spare yet!"; startEnemyTurn(); }
+        if (enemy.mercy >= 3) { state = 'WIN'; battleText = "* YOU SPARED THE DOGBOY! Press R to replay."; }
+        else { battleText = "* THE DOGBOY isn't ready to spare yet!"; startEnemyTurn(); }
       }
     }
   } else if (state === 'ACT_MENU') {
@@ -25,12 +25,12 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') actOption = (actOption + 1) % 3;
     if (e.code === 'KeyX' || e.code === 'Escape') state = 'MENU';
     if (e.code === 'KeyZ' || e.code === 'Enter') {
-      if (actOption === 0) battleText = "* GATEKEEPER - ATK 10 DEF 10. Sworn to guard the gate.";
+      if (actOption === 0) battleText = "* THE DOGBOY - ATK 10 DEF 10. Sworn to guard the gate.";
       else if (actOption === 1) {
         if (enemy.reasoned < 2) { enemy.reasoned++; enemy.mercy++; battleText = "* You calmly explain you mean no harm. Its aim wavers."; }
         else battleText = "* It already hears your words.";
       } else if (actOption === 2) {
-        if (!enemy.lowered) { enemy.lowered = true; enemy.mercy++; battleText = "* You lower your stance. The Gatekeeper hesitates!"; }
+        if (!enemy.lowered) { enemy.lowered = true; enemy.mercy++; battleText = "* You lower your stance. THE DOGBOY hesitates!"; }
         else battleText = "* Your stance is already peaceful.";
       }
       startEnemyTurn();
@@ -43,7 +43,7 @@ window.addEventListener('keydown', (e) => {
   } else if ((state === 'WIN' || state === 'LOSE') && e.code === 'KeyR') {
     walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
     enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
-    selectedOption = 0; battleText = "* THE HEARTLESS blocks the gate!"; state = 'OVERWORLD';
+    selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
   }
 });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });

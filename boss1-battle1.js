@@ -6,7 +6,7 @@ let battleText = "* THE DOGBOY blocks the gate!";
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
-  if (state === 'TITLE' && (e.code === 'KeyZ' || e.code === 'Enter')) state = 'OVERWORLD';
+  if (state === 'TITLE' && (e.code === 'KeyZ' || e.code === 'Enter')) state = 'intro-gate';
   else if (state === 'DIALOGUE' && (e.code === 'KeyZ' || e.code === 'Enter')) state = 'MENU';
   else if (state === 'MENU') {
     if (e.code === 'ArrowLeft') selectedOption = (selectedOption + 3) % 4;
@@ -43,7 +43,7 @@ window.addEventListener('keydown', (e) => {
   } else if ((state === 'WIN' || state === 'LOSE') && e.code === 'KeyR') {
     walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
     enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
-    selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
+    selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'intro-gate';
   }
 });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });

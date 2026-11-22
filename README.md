@@ -2,7 +2,7 @@
 
 A minimalist, *Undertale*-inspired pixel RPG built entirely with vanilla HTML5 Canvas, JavaScript, and Web Audio API.
 
-### 🎮 [Play the Live Demo Here]([https://github.io](https://tc10954-lang.github.io/HEARTLESS-demo-/))
+### 🎮 [Play the Live Demo Here](https://tc10954-lang.github.io/HEARTLESS-demo-/)
 
 ---
 

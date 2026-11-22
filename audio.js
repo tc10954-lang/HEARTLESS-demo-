@@ -36,7 +36,7 @@ setInterval(() => {
   if (state !== lastState) {
     if (state === 'ENCOUNTER') { beep(320, 0.08, 'square', 0.1); setTimeout(() => beep(640, 0.22, 'square', 0.1), 90); }
     if (state === 'WIN') { [523, 659, 784, 1046].forEach((n, i) => setTimeout(() => beep(n, 0.18, 'triangle', 0.1), i * 110)); }
-    if (state === 'LOSE') { [300, 240, 180, 110].forEach((n, i) => setTimeout(() => beep(n, 0.22, 'sawtooth', 0.1), i * 140)); }
+    if (state === 'LOSE') { [330, 294, 262, 196].forEach((n, i) => setTimeout(() => beep(n, 0.22, 'sawtooth', 0.1), i * 140)); }
     lastState = state;
   }
 

@@ -1,4 +1,5 @@
-var throneWalker = { x: 308, y: 420, speed: 2.5 }, throneFrame = 0, killedBoss = false;
+var throneWalker = { x: 308, y: 420, speed: 2.5 }, throneFrame = 0, killedBoss = false, dialogStep = 0;
+var kingSceneImg = new Image(); kingSceneImg.src = './boss2scene.png';
 
 function drawGoldBucket(bx, by) {
   ctx.fillStyle = '#5c3a21'; ctx.fillRect(bx, by + 10, 26, 22);
@@ -15,7 +16,7 @@ function updateThroneScene() {
     if (keys['ArrowUp'] && throneWalker.y > 185) { throneWalker.y -= throneWalker.speed; moving = true; }
     if (keys['ArrowDown'] && throneWalker.y < 435) { throneWalker.y += throneWalker.speed; moving = true; }
     if (moving) throneFrame++;
-    if (throneWalker.y <= 192) state = 'KING_DIALOGUE';
+    if (throneWalker.y <= 192) { state = 'KING_DIALOGUE'; dialogStep = 0; }
   }
 }
 
@@ -39,13 +40,20 @@ function drawThroneScene() {
   ];
   buckets.forEach(function(b) { drawGoldBucket(b.x, b.y); });
 
-  ctx.fillStyle = '#8b6508'; ctx.fillRect(275, 45, 90, 95);
-  ctx.fillStyle = '#ffd700'; ctx.fillRect(282, 52, 76, 80);
-  ctx.fillStyle = '#70081c'; ctx.fillRect(292, 85, 56, 48);
-  ctx.fillStyle = '#ddd'; ctx.fillRect(302, 72, 36, 24);
-  ctx.fillStyle = '#ff0'; ctx.fillRect(302, 58, 36, 14);
-  ctx.fillStyle = '#f00'; ctx.fillRect(317, 62, 6, 6);
+  // Royal Throne Backdrop
+  ctx.fillStyle = '#8b6508'; ctx.fillRect(275, 35, 90, 100);
+  ctx.fillStyle = '#ffd700'; ctx.fillRect(282, 42, 76, 85);
 
+  // Custom King Cutscene Sprite (boss2scene.png)
+  if (kingSceneImg.complete && kingSceneImg.naturalWidth) {
+    ctx.drawImage(kingSceneImg, 276, 48, 88, 96);
+  } else {
+    ctx.fillStyle = '#70081c'; ctx.fillRect(292, 85, 56, 48);
+    ctx.fillStyle = '#ddd'; ctx.fillRect(302, 72, 36, 24);
+    ctx.fillStyle = '#ff0'; ctx.fillRect(302, 58, 36, 14);
+  }
+
+  // Walking Protagonist
   var bob = Math.sin(throneFrame * 0.3) * 2;
   ctx.fillStyle = '#4a2e1b'; ctx.fillRect(throneWalker.x + 4, throneWalker.y + bob, 16, 12);
   ctx.fillStyle = '#f5c242'; ctx.fillRect(throneWalker.x + 6, throneWalker.y + 4 + bob, 12, 8);
@@ -54,18 +62,42 @@ function drawThroneScene() {
   ctx.fillStyle = '#2b1b17'; ctx.fillRect(throneWalker.x + 6, throneWalker.y + 24, 5, 8); ctx.fillRect(throneWalker.x + 13, throneWalker.y + 24, 5, 8);
 
   if (state === 'KING_DIALOGUE') {
-    ctx.fillStyle = '#000'; ctx.fillRect(80, 320, 480, 125);
-    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 4; ctx.strokeRect(80, 320, 480, 125);
-    ctx.fillStyle = '#ffd700'; ctx.font = 'bold 16px Courier New'; ctx.fillText('THE KING:', 105, 352);
-    ctx.fillStyle = '#fff'; ctx.font = '19px Courier New';
-    var line = killedBoss ? '* "So... You\'ve arrived."' : '* "My guard spared you... Intriguing."';
-    ctx.fillText(line, 105, 385);
-    ctx.fillStyle = '#aaa'; ctx.font = '13px Courier New'; ctx.fillText('[BOSS 2 COMING SOON - Press R to Replay]', 105, 425);
+    var lines = [
+      killedBoss ? '* "So... You\'ve arrived."' : '* "My guard spared you... Intriguing."',
+      '* "It doesn\'t matter, he was weak."',
+      '* "Do you know who you\'re talking to?"',
+      '* "I rule this kingdom, whether you like it or not."',
+      '* "Anyway, you must DIE."'
+    ];
+    var isFinalLine = dialogStep >= lines.length - 1;
+
+    ctx.fillStyle = '#000'; ctx.fillRect(45, 320, 550, 125);
+    ctx.strokeStyle = isFinalLine ? '#f33' : '#ffd700'; ctx.lineWidth = 4;
+    ctx.strokeRect(45, 320, 550, 125);
+
+    ctx.fillStyle = '#ffd700'; ctx.font = 'bold 16px Courier New'; ctx.fillText('THE KING:', 65, 352);
+    ctx.fillStyle = isFinalLine ? '#ff5555' : '#fff'; ctx.font = '16px Courier New';
+    ctx.fillText(lines[dialogStep], 65, 385);
+
+    ctx.fillStyle = '#aaa'; ctx.font = '13px Courier New';
+    ctx.fillText(isFinalLine ? '[BOSS 2 COMING SOON - Press R to Replay]' : '[Press Z or ENTER to continue...]', 65, 425);
   } else {
     ctx.fillStyle = '#ffd700'; ctx.font = '15px Courier New'; ctx.textAlign = 'center';
     ctx.fillText('Walk down the red carpet to the King...', 320, 465); ctx.textAlign = 'left';
   }
 }
+
+// Royal Hallway Chiptune Theme
+var royalStep = 0;
+var royalBass = [146.8, 146.8, 220, 146.8, 130.8, 130.8, 196, 220];
+var royalLead = [587.3, 659.3, 698.5, 880, 784, 698.5, 659.3, 587.3];
+setInterval(function() {
+  if ((state === 'THRONE_WALK' || state === 'KING_DIALOGUE') && typeof beep === 'function') {
+    beep(royalBass[royalStep % 8], 0.28, 'triangle', 0.05);
+    beep(royalLead[royalStep % 8], 0.24, 'sine', 0.04);
+    royalStep++;
+  }
+}, 320);
 
 var _origLoop = loop;
 loop = function() {
@@ -78,23 +110,27 @@ loop = function() {
   }
 };
 
-function enterThroneRoom() {
+function handleThroneAdvance() {
   if (state === 'KILL_WIN' || state === 'SPARE_WIN') {
     killedBoss = (state === 'KILL_WIN');
     throneWalker = { x: 308, y: 420, speed: 2.5 };
+    dialogStep = 0;
     state = 'THRONE_WALK';
+  } else if (state === 'KING_DIALOGUE' && dialogStep < 4) {
+    dialogStep++;
+    if (typeof beep === 'function') beep(dialogStep === 4 ? 140 : 210, 0.12, 'sawtooth', 0.08);
   }
 }
 
 window.addEventListener('keyup', function(e) {
-  if (e.code === 'KeyZ' || e.code === 'Enter' || e.code === 'Space') enterThroneRoom();
+  if (e.code === 'KeyZ' || e.code === 'Enter' || e.code === 'Space') handleThroneAdvance();
   if (state === 'KING_DIALOGUE' && e.code === 'KeyR') {
     walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
     enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
-    selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
+    selectedOption = 0; dialogStep = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
   }
 });
 
-canvas.addEventListener('click', enterThroneRoom);
+canvas.addEventListener('click', handleThroneAdvance);
 
 loop();

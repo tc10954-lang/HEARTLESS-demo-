@@ -2,7 +2,7 @@
 
 A minimalist, *Undertale*-inspired pixel RPG boss demo built entirely with vanilla HTML5 Canvas, JavaScript, and Web Audio API.
 
-### 🎮 [Play the Live Demo Here](https://tc10954-lang.github.io/Heartless-demo-/))
+### 🎮 [Play the Live Demo Here](https://tc10954-lang.github.io/Heartless-demo-/)
 
 ---
 
@@ -39,12 +39,5 @@ Heartless-demo/
 └── heart.png       # Custom player soul sprite
 ```
 
----
+--------
 
-## 🚀 Running Locally
-No build tools or dependencies are required. Simply clone the repository and open `index.html` in any modern web browser:
-
-```bash
-git clone https://github.com
-cd Heartless-demo
-```

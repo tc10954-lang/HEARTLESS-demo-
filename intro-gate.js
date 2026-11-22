@@ -9,8 +9,8 @@ let state = 'TITLE', encounterTimer = 0, walkFrame = 0;
 let walker = { x: 308, y: 405, speed: 2.6 };
 let keys = {};
 
-function updateOverworld() {
-  if (state === 'OVERWORLD') {
+function update"intro-gate"() {
+  if (state === 'intro-gate') {
     let moving = false;
     if (keys['ArrowLeft'] && walker.x > 216) { walker.x -= walker.speed; moving = true; }
     if (keys['ArrowRight'] && walker.x < 400) { walker.x += walker.speed; moving = true; }
@@ -23,7 +23,7 @@ function updateOverworld() {
   }
 }
 
-function drawOverworld() {
+function drawintro-gate() {
   if (state === 'TITLE') {
     ctx.fillStyle = '#fff'; ctx.font = 'bold 36px Courier New'; ctx.textAlign = 'center';
     ctx.fillText('HEARTLESS', 320, 180);

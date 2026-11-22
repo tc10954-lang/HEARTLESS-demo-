@@ -2,7 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-const enemyImg = new Image(); enemyImg.src = './enemy.png';
+const enemyImg = new Image(); enemyImg.src = './boss1.png';
 const heartImg = new Image(); heartImg.src = './heart.png';
 
 let state = 'TITLE', encounterTimer = 0, walkFrame = 0;

@@ -78,24 +78,23 @@ loop = function() {
   }
 };
 
-var canAdvanceWin = false;
-setInterval(function() {
-  if (state === 'KILL_WIN' || state === 'SPARE_WIN') canAdvanceWin = true;
-  else canAdvanceWin = false;
-}, 150);
-
-window.addEventListener('keydown', function(e) {
-  if (canAdvanceWin && (e.code === 'KeyZ' || e.code === 'Enter')) {
+function enterThroneRoom() {
+  if (state === 'KILL_WIN' || state === 'SPARE_WIN') {
     killedBoss = (state === 'KILL_WIN');
     throneWalker = { x: 308, y: 420, speed: 2.5 };
-    canAdvanceWin = false;
     state = 'THRONE_WALK';
   }
+}
+
+window.addEventListener('keyup', function(e) {
+  if (e.code === 'KeyZ' || e.code === 'Enter' || e.code === 'Space') enterThroneRoom();
   if (state === 'KING_DIALOGUE' && e.code === 'KeyR') {
     walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
     enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
     selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
   }
 });
+
+canvas.addEventListener('click', enterThroneRoom);
 
 loop();

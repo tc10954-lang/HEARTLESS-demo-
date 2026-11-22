@@ -31,11 +31,16 @@ function drawThroneScene() {
   ctx.fillStyle = '#ffd700'; ctx.fillRect(242, 130, 156, 350);
   ctx.fillStyle = '#9e0b28'; ctx.fillRect(248, 130, 144, 350);
 
-  const buckets = [, [195, 195], [150, 250], [200, 290], [160, 350], [190, 400],
-, [415, 205], [460, 260], [410, 300], [450, 355], [420, 405]
+  // Buckets of Gold everywhere on both sides
+  const buckets = [
+    { x: 155, y: 150 }, { x: 190, y: 175 }, { x: 160, y: 230 },
+    { x: 195, y: 270 }, { x: 155, y: 330 }, { x: 185, y: 390 },
+    { x: 455, y: 150 }, { x: 420, y: 180 }, { x: 460, y: 235 },
+    { x: 425, y: 280 }, { x: 455, y: 340 }, { x: 420, y: 395 }
   ];
-  buckets.forEach(([x, y]) => drawGoldBucket(x, y));
+  buckets.forEach(b => drawGoldBucket(b.x, b.y));
 
+  // Royal Throne & The King
   ctx.fillStyle = '#8b6508'; ctx.fillRect(275, 45, 90, 95);
   ctx.fillStyle = '#ffd700'; ctx.fillRect(282, 52, 76, 80);
   ctx.fillStyle = '#70081c'; ctx.fillRect(292, 85, 56, 48);
@@ -43,6 +48,7 @@ function drawThroneScene() {
   ctx.fillStyle = '#ff0'; ctx.fillRect(302, 58, 36, 14);
   ctx.fillStyle = '#f00'; ctx.fillRect(317, 62, 6, 6);
 
+  // Walking Protagonist
   let bob = Math.sin(throneFrame * 0.3) * 2;
   ctx.fillStyle = '#4a2e1b'; ctx.fillRect(throneWalker.x + 4, throneWalker.y + bob, 16, 12);
   ctx.fillStyle = '#f5c242'; ctx.fillRect(throneWalker.x + 6, throneWalker.y + 4 + bob, 12, 8);

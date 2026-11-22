@@ -2,15 +2,20 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-const enemyImg = new Image(); enemyImg.src = './boss1.png';
-const heartImg = new Image(); heartImg.src = './heart.png';
+const enemyImg = new Image();
+enemyImg.src = './boss1.png';
 
-let state = 'TITLE', encounterTimer = 0, walkFrame = 0;
+const heartImg = new Image();
+heartImg.src = './heart.png';
+
+let state = 'TITLE';
+let encounterTimer = 0;
+let walkFrame = 0;
 let walker = { x: 308, y: 405, speed: 2.6 };
 let keys = {};
 
-function update"intro-gate"() {
-  if (state === 'intro-gate') {
+function updateOverworld() {
+  if (state === 'OVERWORLD') {
     let moving = false;
     if (keys['ArrowLeft'] && walker.x > 216) { walker.x -= walker.speed; moving = true; }
     if (keys['ArrowRight'] && walker.x < 400) { walker.x += walker.speed; moving = true; }
@@ -23,14 +28,14 @@ function update"intro-gate"() {
   }
 }
 
-function drawintro-gate() {
+function drawOverworld() {
   if (state === 'TITLE') {
     ctx.fillStyle = '#fff'; ctx.font = 'bold 36px Courier New'; ctx.textAlign = 'center';
-    ctx.fillText('HEARTLESS', 320, 180);
-    ctx.fillStyle = '#888'; ctx.font = '18px Courier New'; ctx.fillText('(demo)', 320, 210);
-    ctx.fillStyle = '#ff0'; ctx.fillText('Press Z or ENTER to Start', 320, 310);
+    ctx.fillText('HEARTLESS', 320, 150);
+    ctx.fillStyle = '#888'; ctx.font = '18px Courier New'; ctx.fillText('(demo)', 320, 180);
+    ctx.fillStyle = '#ff0'; ctx.fillText('Press Z or ENTER to Start', 320, 265);
     ctx.fillStyle = '#aaa'; ctx.font = '14px Courier New';
-    ctx.fillText('Arrow Keys: Walk / Dodge | Z / Enter: Confirm', 320, 360);
+    ctx.fillText('Arrow Keys: Walk / Dodge | Z / Enter: Confirm', 320, 315);
     ctx.textAlign = 'left'; return;
   }
 

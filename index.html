@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Heartless</title>
+  <title>Heartless (demo)</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: 'Courier New', Courier, monospace;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
     canvas {
-      border: 2px solid #333;
-      image-rendering: pixelated; /* Keeps pixel art crisp */
+      border: 2px solid #500;
+      image-rendering: pixelated;
     }
   </style>
 </head>
@@ -29,31 +30,40 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// --- LOAD YOUR CUSTOM IMAGES HERE ---
+// --- CUSTOM IMAGES (Must match exact lowercase filenames on GitHub) ---
 const enemyImg = new Image();
-enemyImg.src = 'enemy.png'; // Place enemy.png in the same folder
+enemyImg.src = './enemy.png';
 
 const heartImg = new Image();
-heartImg.src = 'heart.png'; // Place heart.png in the same folder
+heartImg.src = './heart.png';
 
 // --- GAME STATE ---
-let state = 'MENU'; // MENU, ATTACK_BAR, DODGE, WIN, LOSE
+let state = 'TITLE'; // TITLE, MENU, ATTACK_BAR, DODGE, WIN, LOSE
 let turnTimer = 0;
+let attackPattern = 0;
+let spiralAngle = 0;
 
 // Stats
-let player = { x: 312, y: 310, size: 16, speed: 3.5, hp: 20, maxHp: 20, invuln: 0 };
-let enemy = { name: "PIXEL SLIME", hp: 50, maxHp: 50 };
+let player = { x: 313, y: 303, size: 14, speed: 3.8, hp: 20, maxHp: 20, invuln: 0 };
+let enemy = { name: "THE HEARTLESS", hp: 120, maxHp: 120 };
 
 // UI & Controls
 const menuOptions = ['FIGHT', 'HEAL'];
 let selectedOption = 0;
-let battleText = "* Pixel Slime blocks the way!";
+let battleText = "* THE HEARTLESS blocks your path!";
 let attackBarX = 120;
 let bullets = [];
 const keys = {};
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
+
+  if (state === 'TITLE') {
+    if (e.code === 'KeyZ' || e.code === 'Enter') {
+      state = 'MENU';
+    }
+    return;
+  }
 
   if (state === 'MENU') {
     if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
@@ -62,47 +72,61 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyZ' || e.code === 'Enter') {
       if (selectedOption === 0) {
         state = 'ATTACK_BAR';
-        attackBarX = 120;
+        attackBarX = 100;
       } else {
-        player.hp = Math.min(player.maxHp, player.hp + 8);
-        battleText = "* You ate a Pixel Pie. Recovered 8 HP!";
+        player.hp = Math.min(player.maxHp, player.hp + 9);
+        battleText = "* You consumed a Soul Shard. +9 HP!";
         startEnemyTurn();
       }
     }
   } else if (state === 'ATTACK_BAR') {
     if (e.code === 'KeyZ' || e.code === 'Enter') {
-      // Calculate damage based on closeness to center (320)
       let distance = Math.abs(320 - attackBarX);
-      let dmg = Math.max(5, Math.floor(25 - distance / 8));
+      let dmg = Math.max(4, Math.floor(28 - distance / 5));
       enemy.hp = Math.max(0, enemy.hp - dmg);
-      battleText = `* You dealt ${dmg} damage!`;
+      battleText = `* STRIKE! Dealt ${dmg} damage!`;
 
       if (enemy.hp <= 0) {
         state = 'WIN';
-        battleText = "* YOU WON! Refresh to play again.";
+        battleText = "* VICTORY! Press R to replay.";
       } else {
         startEnemyTurn();
       }
     }
+  } else if ((state === 'WIN' || state === 'LOSE') && e.code === 'KeyR') {
+    resetGame();
   }
 });
 
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-function startEnemyTurn() {
-  state = 'DODGE';
-  turnTimer = 240; // 4 seconds at 60fps
-  player.x = 312;
-  player.y = 310;
+function resetGame() {
+  player.hp = player.maxHp;
+  player.invuln = 0;
+  enemy.hp = enemy.maxHp;
   bullets = [];
+  selectedOption = 0;
+  battleText = "* THE HEARTLESS blocks your path!";
+  state = 'MENU';
 }
 
-// --- MAIN GAME LOOP ---
+function startEnemyTurn() {
+  state = 'DODGE';
+  turnTimer = 360; // 6 seconds
+  player.x = 313;
+  player.y = 303;
+  bullets = [];
+  attackPattern = Math.floor(Math.random() * 3);
+}
+
 function update() {
+  let isEnraged = enemy.hp <= enemy.maxHp / 2;
+  let speedMult = isEnraged ? 1.4 : 1.0;
+
   if (state === 'ATTACK_BAR') {
-    attackBarX += 6;
-    if (attackBarX > 520) {
-      battleText = "* You missed!";
+    attackBarX += isEnraged ? 11 : 8.5;
+    if (attackBarX > 540) {
+      battleText = "* MISSED! Too slow!";
       startEnemyTurn();
     }
   }
@@ -111,46 +135,79 @@ function update() {
     turnTimer--;
     if (player.invuln > 0) player.invuln--;
 
-    // Move Player Heart inside the box (x: 240-400, y: 240-380)
-    if (keys['ArrowLeft'] && player.x > 244) player.x -= player.speed;
-    if (keys['ArrowRight'] && player.x < 400 - player.size - 4) player.x += player.speed;
-    if (keys['ArrowUp'] && player.y > 244) player.y -= player.speed;
-    if (keys['ArrowDown'] && player.y < 380 - player.size - 4) player.y += player.speed;
+    if (keys['ArrowLeft'] && player.x > 234) player.x -= player.speed;
+    if (keys['ArrowRight'] && player.x < 410 - player.size - 4) player.x += player.speed;
+    if (keys['ArrowUp'] && player.y > 234) player.y -= player.speed;
+    if (keys['ArrowDown'] && player.y < 390 - player.size - 4) player.y += player.speed;
 
-    // Spawn falling projectiles
-    if (turnTimer % 18 === 0) {
-      bullets.push({
-        x: 245 + Math.random() * 140,
-        y: 235,
-        size: 8,
-        vy: 2.5 + Math.random() * 1.5
-      });
+    // Pattern 0: Aimed Sniper Shots
+    if (attackPattern === 0) {
+      let rate = isEnraged ? 14 : 20;
+      if (turnTimer % rate === 0) {
+        let side = Math.floor(Math.random() * 4);
+        let bx = side === 0 ? 230 : side === 1 ? 410 : 230 + Math.random() * 180;
+        let by = side === 2 ? 230 : side === 3 ? 390 : 230 + Math.random() * 160;
+        let angle = Math.atan2((player.y + 7) - by, (player.x + 7) - bx);
+        let spd = 3.2 * speedMult;
+        bullets.push({ x: bx, y: by, size: 7, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd });
+      }
     }
 
-    // Update projectiles & check collision
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      let b = bullets[i];
-      b.y += b.vy;
-
-      // Hitbox check
-      if (player.invuln === 0 &&
-          player.x < b.x + b.size &&
-          player.x + player.size > b.x &&
-          player.y < b.y + b.size &&
-          player.y + player.size > b.y) {
-        player.hp = Math.max(0, player.hp - 4);
-        player.invuln = 45; // Brief invincibility frames
-        if (player.hp <= 0) {
-          state = 'LOSE';
-          battleText = "* GAME OVER. Refresh to try again.";
+    // Pattern 1: Crossfire Walls
+    if (attackPattern === 1) {
+      let rate = isEnraged ? 28 : 38;
+      if (turnTimer % rate === 0) {
+        let gapY = 245 + Math.random() * 110;
+        for (let y = 232; y < 385; y += 16) {
+          if (Math.abs(y - gapY) > 22) {
+            bullets.push({ x: 225, y: y, size: 8, vx: 2.6 * speedMult, vy: 0 });
+          }
         }
       }
-      if (b.y > 385) bullets.splice(i, 1);
+      if (turnTimer % (rate + 12) === 0) {
+        bullets.push({ x: 235 + Math.random() * 165, y: 225, size: 8, vx: 0, vy: 3.3 * speedMult });
+      }
+    }
+
+    // Pattern 2: Spiral Bullet Storm
+    if (attackPattern === 2) {
+      let rate = isEnraged ? 4 : 6;
+      if (turnTimer % rate === 0) {
+        spiralAngle += 0.45;
+        let spd = 2.4 * speedMult;
+        for (let k = 0; k < 2; k++) {
+          let a = spiralAngle + k * Math.PI;
+          bullets.push({ x: 316, y: 306, size: 6, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd });
+        }
+      }
+    }
+
+    // Bullet Movement & Collision
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      let b = bullets[i];
+      b.x += b.vx;
+      b.y += b.vy;
+
+      if (player.invuln === 0 &&
+          player.x + 2 < b.x + b.size &&
+          player.x + player.size - 2 > b.x &&
+          player.y + 2 < b.y + b.size &&
+          player.y + player.size - 2 > b.y) {
+        player.hp = Math.max(0, player.hp - 5);
+        player.invuln = 28;
+        if (player.hp <= 0) {
+          state = 'LOSE';
+          battleText = "* SHATTERED. Press R to try again.";
+        }
+      }
+      if (b.x < 210 || b.x > 430 || b.y < 210 || b.y > 410) {
+        bullets.splice(i, 1);
+      }
     }
 
     if (turnTimer <= 0 && state === 'DODGE') {
       state = 'MENU';
-      battleText = "* Pixel Slime prepares another attack.";
+      battleText = isEnraged ? "* THE HEARTLESS IS ENRAGED!" : "* Shadows close in around you...";
     }
   }
 }
@@ -159,50 +216,74 @@ function draw() {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Draw Enemy (Custom image or white fallback square)
+  // Title Screen
+  if (state === 'TITLE') {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 36px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('HEARTLESS', 320, 180);
+    ctx.font = '18px Courier New';
+    ctx.fillStyle = '#888';
+    ctx.fillText('(demo)', 320, 210);
+
+    ctx.fillStyle = '#ff0';
+    ctx.font = '18px Courier New';
+    ctx.fillText('Press Z or ENTER to Start', 320, 310);
+
+    ctx.fillStyle = '#aaa';
+    ctx.font = '14px Courier New';
+    ctx.fillText('Arrow Keys: Move / Dodge   |   Z / Enter: Confirm', 320, 360);
+    ctx.textAlign = 'left';
+    return;
+  }
+
+  let isEnraged = enemy.hp <= enemy.maxHp / 2;
+
+  // 1. Draw Enemy
   if (enemy.hp > 0) {
+    let shakeX = isEnraged ? (Math.random() - 0.5) * 6 : 0;
+    let shakeY = isEnraged ? (Math.random() - 0.5) * 6 : 0;
+
     if (enemyImg.complete && enemyImg.naturalWidth !== 0) {
-      ctx.drawImage(enemyImg, 260, 60, 120, 120);
+      ctx.drawImage(enemyImg, 260 + shakeX, 55 + shakeY, 120, 120);
     } else {
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(280, 80, 80, 80);
+      ctx.fillStyle = isEnraged ? '#f33' : '#fff';
+      ctx.fillRect(280 + shakeX, 75 + shakeY, 80, 80);
       ctx.fillStyle = '#000';
-      ctx.fillRect(295, 105, 12, 12); // Eyes
-      ctx.fillRect(333, 105, 12, 12);
+      ctx.fillRect(295 + shakeX, 100 + shakeY, 12, 12);
+      ctx.fillRect(333 + shakeX, 100 + shakeY, 12, 12);
     }
+
     // Enemy HP Bar
-    ctx.fillStyle = '#333';
-    ctx.fillRect(270, 40, 100, 10);
-    ctx.fillStyle = '#0f0';
-    ctx.fillRect(270, 40, (enemy.hp / enemy.maxHp) * 100, 10);
+    ctx.fillStyle = '#300';
+    ctx.fillRect(245, 35, 150, 10);
+    ctx.fillStyle = isEnraged ? '#f00' : '#0f0';
+    ctx.fillRect(245, 35, (enemy.hp / enemy.maxHp) * 150, 10);
   }
 
   // 2. Draw Battle Box
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = isEnraged ? '#f44' : '#fff';
   ctx.lineWidth = 4;
   if (state === 'DODGE') {
-    ctx.strokeRect(240, 240, 160, 140); // Compact box for dodging
+    ctx.strokeRect(230, 230, 180, 160);
   } else {
-    ctx.strokeRect(80, 240, 480, 140);  // Wide box for dialogue & attack bar
+    ctx.strokeRect(80, 230, 480, 160);
   }
 
-  // 3. State-Specific Visuals
+  // 3. State Visuals
   if (state === 'MENU' || state === 'WIN' || state === 'LOSE') {
     ctx.fillStyle = '#fff';
-    ctx.font = '20px Courier New';
-    ctx.fillText(battleText, 105, 285);
+    ctx.font = '19px Courier New';
+    ctx.fillText(battleText, 100, 280);
   } 
   else if (state === 'ATTACK_BAR') {
-    // Target zone in center
     ctx.fillStyle = '#444';
-    ctx.fillRect(305, 250, 30, 120);
-    // Moving strike line
+    ctx.fillRect(310, 240, 20, 140);
     ctx.fillStyle = '#ff0';
-    ctx.fillRect(attackBarX, 245, 6, 130);
+    ctx.fillRect(attackBarX, 235, 6, 150);
   } 
   else if (state === 'DODGE') {
-    // Draw Player Heart (blinks when hit)
-    if (Math.floor(player.invuln / 5) % 2 === 0) {
+    if (Math.floor(player.invuln / 4) % 2 === 0) {
       if (heartImg.complete && heartImg.naturalWidth !== 0) {
         ctx.drawImage(heartImg, player.x, player.y, player.size, player.size);
       } else {
@@ -210,23 +291,22 @@ function draw() {
         ctx.fillRect(player.x, player.y, player.size, player.size);
       }
     }
-    // Draw Bullets
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = isEnraged ? '#ff5555' : '#fff';
     bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
   }
 
-  // 4. Player Stats & Action Buttons
+  // 4. Player HUD
   ctx.fillStyle = '#fff';
   ctx.font = '18px Courier New';
-  ctx.fillText(`YOU   LV 1   HP ${player.hp}/${player.maxHp}`, 80, 415);
+  ctx.fillText(`YOU   LV 1   HP ${player.hp}/${player.maxHp}`, 80, 418);
 
   menuOptions.forEach((opt, index) => {
     let btnX = 140 + index * 220;
     ctx.strokeStyle = (state === 'MENU' && selectedOption === index) ? '#ff0' : '#f80';
     ctx.fillStyle = ctx.strokeStyle;
     ctx.lineWidth = 2;
-    ctx.strokeRect(btnX, 430, 140, 36);
-    ctx.fillText(opt, btnX + 42, 454);
+    ctx.strokeRect(btnX, 432, 140, 36);
+    ctx.fillText(opt, btnX + 42, 456);
   });
 }
 

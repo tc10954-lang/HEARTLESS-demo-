@@ -16,7 +16,7 @@ window.addEventListener('keydown', (e) => {
       else if (selectedOption === 1) { state = 'ACT_MENU'; actOption = 0; }
       else if (selectedOption === 2) { player.hp = Math.min(20, player.hp + 9); battleText = "* Soul Shard used. +9 HP!"; startEnemyTurn(); }
       else if (selectedOption === 3) {
-        if (enemy.mercy >= 3) { state = 'WIN'; battleText = "* YOU SPARED THE DOGBOY! Press R to replay."; }
+        if (enemy.mercy >= 3) { state = 'SPARE_WIN'; battleText = "* YOU SPARED THE DOGBOY! Press Z to pass."; }
         else { battleText = "* THE DOGBOY isn't ready to spare yet!"; startEnemyTurn(); }
       }
     }
@@ -38,9 +38,9 @@ window.addEventListener('keydown', (e) => {
   } else if (state === 'ATTACK_BAR' && (e.code === 'KeyZ' || e.code === 'Enter')) {
     let dmg = Math.max(5, Math.floor(28 - Math.abs(320 - attackBarX) / 5));
     enemy.hp = Math.max(0, enemy.hp - dmg);
-    if (enemy.hp <= 0) { state = 'WIN'; battleText = "* THE GATE OPENS! Press R to replay."; }
+    if (enemy.hp <= 0) { state = 'KILL_WIN'; battleText = "* THE DOGBOY falls... Press Z to pass the gate."; }
     else { battleText = `* STRIKE! Dealt ${dmg} damage!`; startEnemyTurn(); }
-  } else if ((state === 'WIN' || state === 'LOSE') && e.code === 'KeyR') {
+  } else if (state === 'LOSE' && e.code === 'KeyR') {
     walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
     enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
     selectedOption = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';

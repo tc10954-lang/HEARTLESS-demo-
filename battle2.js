@@ -37,8 +37,8 @@ function updateBattle() {
     }
     if (turnTimer <= 0 && state === 'DODGE') {
       state = 'MENU';
-      if (enemy.mercy >= 3) battleText = "* THE HEARTLESS is sparing you!";
-      else battleText = rage ? "* THE HEARTLESS LOCKS ONTO YOU!" : "* Sniper sights track your soul...";
+      if (enemy.mercy >= 3) battleText = "* THE DOGBOY is sparing you!";
+      else battleText = rage ? "* THE DOGBOY LOCKS ONTO YOU!" : "* Sniper sights track your soul...";
     }
   }
 }

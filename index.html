@@ -45,12 +45,12 @@ let spiralAngle = 0;
 
 // Stats
 let player = { x: 313, y: 303, size: 14, speed: 3.8, hp: 20, maxHp: 20, invuln: 0 };
-let enemy = { name: "THE HEARTLESS", hp: 120, maxHp: 120 };
+let enemy = { name: "THE DOGBOY", hp: 120, maxHp: 120 };
 
 // UI & Controls
 const menuOptions = ['FIGHT', 'HEAL'];
 let selectedOption = 0;
-let battleText = "* THE HEARTLESS blocks your path!";
+let battleText = "* THE DOGBOY blocks your path!";
 let attackBarX = 120;
 let bullets = [];
 const keys = {};
@@ -106,7 +106,7 @@ function resetGame() {
   enemy.hp = enemy.maxHp;
   bullets = [];
   selectedOption = 0;
-  battleText = "* THE HEARTLESS blocks your path!";
+  battleText = "* THE DOGBOY blocks your path!";
   state = 'MENU';
 }
 

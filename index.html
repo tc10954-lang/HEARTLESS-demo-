@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Undertale Battle Demo</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    canvas {
+      border: 2px solid #333;
+      image-rendering: pixelated; /* Keeps pixel art crisp */
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="640" height="480"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+// --- LOAD YOUR CUSTOM IMAGES HERE ---
+const enemyImg = new Image();
+enemyImg.src = 'enemy.png'; // Place enemy.png in the same folder
+
+const heartImg = new Image();
+heartImg.src = 'heart.png'; // Place heart.png in the same folder
+
+// --- GAME STATE ---
+let state = 'MENU'; // MENU, ATTACK_BAR, DODGE, WIN, LOSE
+let turnTimer = 0;
+
+// Stats
+let player = { x: 312, y: 310, size: 16, speed: 3.5, hp: 20, maxHp: 20, invuln: 0 };
+let enemy = { name: "PIXEL SLIME", hp: 50, maxHp: 50 };
+
+// UI & Controls
+const menuOptions = ['FIGHT', 'HEAL'];
+let selectedOption = 0;
+let battleText = "* Pixel Slime blocks the way!";
+let attackBarX = 120;
+let bullets = [];
+const keys = {};
+
+window.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+
+  if (state === 'MENU') {
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+      selectedOption = (selectedOption + 1) % menuOptions.length;
+    }
+    if (e.code === 'KeyZ' || e.code === 'Enter') {
+      if (selectedOption === 0) {
+        state = 'ATTACK_BAR';
+        attackBarX = 120;
+      } else {
+        player.hp = Math.min(player.maxHp, player.hp + 8);
+        battleText = "* You ate a Pixel Pie. Recovered 8 HP!";
+        startEnemyTurn();
+      }
+    }
+  } else if (state === 'ATTACK_BAR') {
+    if (e.code === 'KeyZ' || e.code === 'Enter') {
+      // Calculate damage based on closeness to center (320)
+      let distance = Math.abs(320 - attackBarX);
+      let dmg = Math.max(5, Math.floor(25 - distance / 8));
+      enemy.hp = Math.max(0, enemy.hp - dmg);
+      battleText = `* You dealt ${dmg} damage!`;
+
+      if (enemy.hp <= 0) {
+        state = 'WIN';
+        battleText = "* YOU WON! Refresh to play again.";
+      } else {
+        startEnemyTurn();
+      }
+    }
+  }
+});
+
+window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+function startEnemyTurn() {
+  state = 'DODGE';
+  turnTimer = 240; // 4 seconds at 60fps
+  player.x = 312;
+  player.y = 310;
+  bullets = [];
+}
+
+// --- MAIN GAME LOOP ---
+function update() {
+  if (state === 'ATTACK_BAR') {
+    attackBarX += 6;
+    if (attackBarX > 520) {
+      battleText = "* You missed!";
+      startEnemyTurn();
+    }
+  }
+
+  if (state === 'DODGE') {
+    turnTimer--;
+    if (player.invuln > 0) player.invuln--;
+
+    // Move Player Heart inside the box (x: 240-400, y: 240-380)
+    if (keys['ArrowLeft'] && player.x > 244) player.x -= player.speed;
+    if (keys['ArrowRight'] && player.x < 400 - player.size - 4) player.x += player.speed;
+    if (keys['ArrowUp'] && player.y > 244) player.y -= player.speed;
+    if (keys['ArrowDown'] && player.y < 380 - player.size - 4) player.y += player.speed;
+
+    // Spawn falling projectiles
+    if (turnTimer % 18 === 0) {
+      bullets.push({
+        x: 245 + Math.random() * 140,
+        y: 235,
+        size: 8,
+        vy: 2.5 + Math.random() * 1.5
+      });
+    }
+
+    // Update projectiles & check collision
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      let b = bullets[i];
+      b.y += b.vy;
+
+      // Hitbox check
+      if (player.invuln === 0 &&
+          player.x < b.x + b.size &&
+          player.x + player.size > b.x &&
+          player.y < b.y + b.size &&
+          player.y + player.size > b.y) {
+        player.hp = Math.max(0, player.hp - 4);
+        player.invuln = 45; // Brief invincibility frames
+        if (player.hp <= 0) {
+          state = 'LOSE';
+          battleText = "* GAME OVER. Refresh to try again.";
+        }
+      }
+      if (b.y > 385) bullets.splice(i, 1);
+    }
+
+    if (turnTimer <= 0 && state === 'DODGE') {
+      state = 'MENU';
+      battleText = "* Pixel Slime prepares another attack.";
+    }
+  }
+}
+
+function draw() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 1. Draw Enemy (Custom image or white fallback square)
+  if (enemy.hp > 0) {
+    if (enemyImg.complete && enemyImg.naturalWidth !== 0) {
+      ctx.drawImage(enemyImg, 260, 60, 120, 120);
+    } else {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(280, 80, 80, 80);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(295, 105, 12, 12); // Eyes
+      ctx.fillRect(333, 105, 12, 12);
+    }
+    // Enemy HP Bar
+    ctx.fillStyle = '#333';
+    ctx.fillRect(270, 40, 100, 10);
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(270, 40, (enemy.hp / enemy.maxHp) * 100, 10);
+  }
+
+  // 2. Draw Battle Box
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 4;
+  if (state === 'DODGE') {
+    ctx.strokeRect(240, 240, 160, 140); // Compact box for dodging
+  } else {
+    ctx.strokeRect(80, 240, 480, 140);  // Wide box for dialogue & attack bar
+  }
+
+  // 3. State-Specific Visuals
+  if (state === 'MENU' || state === 'WIN' || state === 'LOSE') {
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px Courier New';
+    ctx.fillText(battleText, 105, 285);
+  } 
+  else if (state === 'ATTACK_BAR') {
+    // Target zone in center
+    ctx.fillStyle = '#444';
+    ctx.fillRect(305, 250, 30, 120);
+    // Moving strike line
+    ctx.fillStyle = '#ff0';
+    ctx.fillRect(attackBarX, 245, 6, 130);
+  } 
+  else if (state === 'DODGE') {
+    // Draw Player Heart (blinks when hit)
+    if (Math.floor(player.invuln / 5) % 2 === 0) {
+      if (heartImg.complete && heartImg.naturalWidth !== 0) {
+        ctx.drawImage(heartImg, player.x, player.y, player.size, player.size);
+      } else {
+        ctx.fillStyle = '#f00';
+        ctx.fillRect(player.x, player.y, player.size, player.size);
+      }
+    }
+    // Draw Bullets
+    ctx.fillStyle = '#fff';
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+  }
+
+  // 4. Player Stats & Action Buttons
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px Courier New';
+  ctx.fillText(`YOU   LV 1   HP ${player.hp}/${player.maxHp}`, 80, 415);
+
+  menuOptions.forEach((opt, index) => {
+    let btnX = 140 + index * 220;
+    ctx.strokeStyle = (state === 'MENU' && selectedOption === index) ? '#ff0' : '#f80';
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(btnX, 430, 140, 36);
+    ctx.fillText(opt, btnX + 42, 454);
+  });
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

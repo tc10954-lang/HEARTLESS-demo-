@@ -1,7 +1,7 @@
 // --- EDIT YOUR UPDATES & NEWS HERE ---
 const NEWS_ITEMS = [
-  "v0.3: Added intro for Boss 2",
-  "v0.2: Added Pacifist ACT/MERCY route + Mobile buttons"
+  "FULL GAME COMING SOON!",
+  "v1: Added THE KING and ending cutscene"
 ];
 
 // Automatically hooks into drawOverworld() to show the banner on the Title Screen

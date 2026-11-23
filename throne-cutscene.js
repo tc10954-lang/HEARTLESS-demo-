@@ -29,7 +29,6 @@ function drawThroneScene() {
     ctx.fillStyle = '#ffd700'; ctx.fillRect(112, py, 30, 8); ctx.fillRect(498, py, 30, 8);
   }
 
-  // Grand Red Carpet with Gold Trim
   ctx.fillStyle = '#ffd700'; ctx.fillRect(242, 130, 156, 350);
   ctx.fillStyle = '#9e0b28'; ctx.fillRect(248, 130, 144, 350);
 
@@ -41,13 +40,9 @@ function drawThroneScene() {
   ];
   buckets.forEach(function(b) { drawGoldBucket(b.x, b.y); });
 
-  // Gradual Darkness Circle around the King
-  var shadow = ctx.createRadialGradient(320, 96, 48, 320, 110, 165);
-  shadow.addColorStop(0, '#000000');
-  shadow.addColorStop(0.55, 'rgba(0, 0, 0, 0.85)');
-  shadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = shadow;
-  ctx.fillRect(110, 20, 420, 260);
+  // Royal Throne Backdrop
+  ctx.fillStyle = '#8b6508'; ctx.fillRect(275, 35, 90, 100);
+  ctx.fillStyle = '#ffd700'; ctx.fillRect(282, 42, 76, 85);
 
   // Custom King Cutscene Sprite (boss2scene.png)
   if (kingSceneImg.complete && kingSceneImg.naturalWidth) {
@@ -84,8 +79,8 @@ function drawThroneScene() {
     ctx.fillStyle = isFinalLine ? '#ff5555' : '#fff'; ctx.font = '16px Courier New';
     ctx.fillText(lines[dialogStep], 65, 385);
 
-    ctx.fillStyle = '#aaa'; ctx.font = '13px Courier New';
-    ctx.fillText(isFinalLine ? '[BOSS 2 COMING SOON - Press R to Replay]' : '[Press Z or ENTER to continue...]', 65, 425);
+    ctx.fillStyle = isFinalLine ? '#ff0' : '#aaa'; ctx.font = '13px Courier New';
+    ctx.fillText(isFinalLine ? '[Press Z or ENTER to Fight THE KING!]' : '[Press Z or ENTER to continue...]', 65, 425);
   } else {
     ctx.fillStyle = '#ffd700'; ctx.font = '15px Courier New'; ctx.textAlign = 'center';
     ctx.fillText('Walk down the red carpet to the King...', 320, 465); ctx.textAlign = 'left';
@@ -110,6 +105,10 @@ loop = function() {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
     updateThroneScene(); drawThroneScene();
     requestAnimationFrame(loop);
+  } else if (state.startsWith('BOSS2_') && typeof updateBoss2 === 'function') {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
+    updateBoss2(); drawBoss2();
+    requestAnimationFrame(loop);
   } else {
     _origLoop();
   }
@@ -121,19 +120,18 @@ function handleThroneAdvance() {
     throneWalker = { x: 308, y: 420, speed: 2.5 };
     dialogStep = 0;
     state = 'THRONE_WALK';
-  } else if (state === 'KING_DIALOGUE' && dialogStep < 4) {
-    dialogStep++;
-    if (typeof beep === 'function') beep(dialogStep === 4 ? 140 : 210, 0.12, 'sawtooth', 0.08);
+  } else if (state === 'KING_DIALOGUE') {
+    if (dialogStep < 4) {
+      dialogStep++;
+      if (typeof beep === 'function') beep(dialogStep === 4 ? 140 : 210, 0.12, 'sawtooth', 0.08);
+    } else if (typeof startBoss2 === 'function') {
+      startBoss2();
+    }
   }
 }
 
 window.addEventListener('keyup', function(e) {
   if (e.code === 'KeyZ' || e.code === 'Enter' || e.code === 'Space') handleThroneAdvance();
-  if (state === 'KING_DIALOGUE' && e.code === 'KeyR') {
-    walker = { x: 308, y: 405, speed: 2.6 }; player.hp = 20; player.invuln = 0;
-    enemy = { hp: 100, mercy: 0, reasoned: 0, lowered: false }; bullets = []; telegraphs = [];
-    selectedOption = 0; dialogStep = 0; battleText = "* THE DOGBOY blocks the gate!"; state = 'OVERWORLD';
-  }
 });
 
 canvas.addEventListener('click', handleThroneAdvance);

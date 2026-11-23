@@ -4,7 +4,7 @@
 
 A minimalist, *Undertale*-inspired pixel RPG boss rush and story demo built entirely with vanilla HTML5 Canvas, JavaScript, and the Web Audio API.
 
-### 🎮 [Play the Live Demo Here]((https://tc10954-lang.github.io/HEARTLESS-demo-/)
+### 🎮 [Play the Live Demo Here](https://tc10954-lang.github.io/HEARTLESS-demo-/)
 
 ---
 

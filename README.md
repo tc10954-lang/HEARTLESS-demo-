@@ -59,11 +59,3 @@ HEARTLESS-demo-/
 * **New Chapters, Bosses & Story Routes:** More encounters, deeper Pacifist/Genocide consequences, and new chiptune tracks.
 
 ---
-
-## 🚀 Running Locally
-No build tools or dependencies are required. Clone the repository and open `index.html` in any modern web browser:
-
-```bash
-git clone https://github.com
-cd HEARTLESS-demo-
-```

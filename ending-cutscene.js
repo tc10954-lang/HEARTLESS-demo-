@@ -131,7 +131,7 @@ function drawEndingScene() {
       ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3; ctx.strokeRect(110, 325, 420, 115);
       ctx.textAlign = 'center';
       ctx.fillStyle = '#ffd700'; ctx.font = 'bold 22px Courier New';
-      ctx.fillText('HEARTLESS (DEMO) — FIN', 320, 368);
+      ctx.fillText('HEARTLESS (DEMO) — FINISH', 320, 368);
       ctx.fillStyle = '#fff'; ctx.font = '14px Courier New';
       ctx.fillText('The surface awaits... [Press R to Retry King]', 320, 408);
       ctx.textAlign = 'left';

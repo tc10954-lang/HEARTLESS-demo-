@@ -13,7 +13,7 @@ function getKingMenuDialogue() {
   if (pct >= 60 && pct < 80)  return '* "You think you\'re slick..."';
   if (pct >= 40 && pct < 60)  return '* "I\'ll admit, you\'re good. But not good enough."';
   if (pct >= 20 && pct < 40)  { b2RedText = true; return '* "YOU FOOL. THIS IS THE END."'; }
-  if (pct >= 1  && pct < 20)  { b2RedText = true; return '* "You sick, sick animal... Go to Hell..."';
+  if (pct >= 1  && pct < 20)  return '* "You sick, sick animal... Go to Hell..."';
   return "* THE KING draws his royal blade!";
 }
 
@@ -67,7 +67,7 @@ window.addEventListener('keydown', function(e) {
 });
 
 function startB2Turn() {
-  state = 'BOSS2_DODGE'; b2Timer = 330; // 5.5 seconds
+  state = 'BOSS2_DODGE'; b2Timer = 330;
   player.x = 313; player.y = 303;
   b2Bullets = []; b2Lasers = []; b2Guards = []; b2Whips = [];
   b2Pattern = (b2Pattern + 1) % 3;

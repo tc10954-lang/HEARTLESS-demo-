@@ -21,6 +21,7 @@ devPanel.innerHTML = `
   <button class="warp-opt" data-dest="BOSS1">▶ Boss 1 (THE DOGBOY)</button>
   <button class="warp-opt" data-dest="THRONE">▶ Throne Cutscene</button>
   <button class="warp-opt" data-dest="BOSS2">▶ Boss 2 (THE KING)</button>
+  <button class="warp-opt" data-dest="ENDING">▶ Ending Cutscene</button>
 `;
 document.body.appendChild(devPanel);
 
@@ -59,6 +60,10 @@ devPanel.querySelectorAll('.warp-opt').forEach(function(btn) {
       state = 'THRONE_WALK';
     } else if (dest === 'BOSS2' && typeof startBoss2 === 'function') {
       startBoss2();
+    } else if (dest === 'ENDING') {
+      endStep = 0;
+      gateOpenProgress = 0;
+      state = 'ENDING_CUTSCENE';
     }
   });
 });

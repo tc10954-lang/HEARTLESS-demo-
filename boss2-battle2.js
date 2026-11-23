@@ -3,49 +3,57 @@ var b2Aura = 0;
 function hitB2Player(dmg) {
   if (player.invuln > 0) return;
   player.hp = Math.max(0, player.hp - dmg);
-  player.invuln = 30;
+  player.invuln = 26;
   if (player.hp <= 0) { state = 'BOSS2_LOSE'; b2RedText = false; b2Text = "* FALLEN. Press R to retry THE KING."; }
 }
 
 function updateBoss2() {
-  b2Aura += 0.1; b2Pulse += 0.15;
+  b2Aura += 0.12; b2Pulse += 0.16;
   var rage = b2Enemy.hp <= 64 && b2Enemy.mercy < 4;
 
   if (state === 'BOSS2_ATTACK') {
-    b2BarX += rage ? 11.5 : 9.5;
+    b2BarX += rage ? 12 : 10;
     if (b2BarX > 545) { b2Text = "* PARRIED! Too slow!"; startB2Turn(); }
   }
 
   if (state === 'BOSS2_DODGE') {
     b2Timer--;
     if (player.invuln > 0) player.invuln--;
-    if (keys['ArrowLeft'] && player.x > 224) player.x -= 4.0;
-    if (keys['ArrowRight'] && player.x < 402) player.x += 4.0;
-    if (keys['ArrowUp'] && player.y > 224) player.y -= 4.0;
-    if (keys['ArrowDown'] && player.y < 382) player.y += 4.0;
+    if (keys['ArrowLeft'] && player.x > 224) player.x -= 4.2;
+    if (keys['ArrowRight'] && player.x < 402) player.x += 4.2;
+    if (keys['ArrowUp'] && player.y > 224) player.y -= 4.2;
+    if (keys['ArrowDown'] && player.y < 382) player.y += 4.2;
 
     var mult = b2Enemy.mercy >= 4 ? 0.7 : (rage ? 1.25 : 1.0);
 
     // PATTERN 0: Aimed Snipers
-    if (b2Pattern === 0 && b2Timer % (rage ? 18 : 24) === 0) {
+    if (b2Pattern === 0 && b2Timer % (rage ? 17 : 22) === 0) {
       var side = Math.floor(Math.random() * 4);
       var bx = side === 0 ? 220 : side === 1 ? 420 : 225 + Math.random() * 190;
       var by = side === 2 ? 220 : side === 3 ? 390 : 225 + Math.random() * 165;
-      b2Lasers.push({ x: bx, y: by, tx: player.x + 7, ty: player.y + 7, t: 16 });
+      b2Lasers.push({ x: bx, y: by, tx: player.x + 7, ty: player.y + 7, t: 14 });
     }
 
-    // PATTERN 1: Quiet pause, then massive avoidable Guard Body thrown at you!
-    if (b2Pattern === 1 && (b2Timer === 240 || b2Timer === 115)) {
+    // PATTERN 1: Insanely Fast Half-Side Guard Body Slams (3 slams per turn!)
+    if (b2Pattern === 1 && (b2Timer === 265 || b2Timer === 170 || b2Timer === 75)) {
       var throwLeft = Math.random() < 0.5;
-      var gx = throwLeft ? 225 : 322; // Covers either left half or right half (93px wide, leaving 100px safe!)
-      b2Guards.push({ x: gx, y: 120, w: 93, h: 95, vy: 8.5 * mult, warn: 28 });
+      var gx = throwLeft ? 224 : 322;
+      b2Guards.push({ x: gx, y: 110, w: 94, h: 98, vy: 16.5 * mult, warn: rage ? 10 : 12 });
     }
 
-    // PATTERN 2: Royal Whiplashes (telegraphed horizontal & vertical whip snaps)
-    if (b2Pattern === 2 && b2Timer % (rage ? 38 : 48) === 0) {
-      var horiz = Math.random() < 0.5;
-      if (horiz) b2Whips.push({ horiz: true, pos: 232 + Math.random() * 145, warn: 26, snap: 10 });
-      else b2Whips.push({ horiz: false, pos: 232 + Math.random() * 175, warn: 26, snap: 10 });
+    // PATTERN 2: Multi-Whiplash Barrage (3 to 4 crisscrossing slashes at once!)
+    if (b2Pattern === 2 && b2Timer % (rage ? 34 : 42) === 0) {
+      var count = rage ? 4 : 3;
+      var safeX = 240 + Math.random() * 150;
+      var safeY = 240 + Math.random() * 125;
+      for (var w = 0; w < count; w++) {
+        var horiz = w % 2 === 0;
+        var pos = horiz ? (230 + Math.random() * 148) : (230 + Math.random() * 178);
+        // Keep a guaranteed safe pocket so it's always dodgeable
+        if (horiz && Math.abs(pos - safeY) < 22) pos = safeY > 305 ? 236 : 372;
+        if (!horiz && Math.abs(pos - safeX) < 22) pos = safeX > 320 ? 236 : 402;
+        b2Whips.push({ horiz: horiz, pos: pos, warn: rage ? 14 : 17, snap: 8 });
+      }
     }
 
     // Update Snipers
@@ -53,7 +61,7 @@ function updateBoss2() {
       var l = b2Lasers[i];
       if (--l.t <= 0) {
         var ang = Math.atan2(l.ty - l.y, l.tx - l.x);
-        b2Bullets.push({ x: l.x, y: l.y, vx: Math.cos(ang) * 3.6 * mult, vy: Math.sin(ang) * 3.6 * mult });
+        b2Bullets.push({ x: l.x, y: l.y, vx: Math.cos(ang) * 3.8 * mult, vy: Math.sin(ang) * 3.8 * mult });
         b2Lasers.splice(i, 1);
       }
     }
@@ -63,11 +71,13 @@ function updateBoss2() {
       if (b.x < 200 || b.x > 440 || b.y < 200 || b.y > 420) b2Bullets.splice(i, 1);
     }
 
-    // Update Thrown Guard Bodies
+    // Update Guard Bodies
     for (var i = b2Guards.length - 1; i >= 0; i--) {
       var g = b2Guards[i];
-      if (g.warn > 0) { g.warn--; }
-      else {
+      if (g.warn > 0) {
+        g.warn--;
+        if (g.warn === 0 && typeof beep === 'function') beep(110, 0.16, 'sawtooth', 0.12, 45);
+      } else {
         g.y += g.vy;
         if (player.x + 3 < g.x + g.w && player.x + 11 > g.x && player.y + 3 < g.y + g.h && player.y + 11 > g.y) hitB2Player(6);
         if (g.y > 420) b2Guards.splice(i, 1);
@@ -77,8 +87,10 @@ function updateBoss2() {
     // Update Whiplashes
     for (var i = b2Whips.length - 1; i >= 0; i--) {
       var w = b2Whips[i];
-      if (w.warn > 0) { w.warn--; }
-      else {
+      if (w.warn > 0) {
+        w.warn--;
+        if (w.warn === 0 && typeof beep === 'function') beep(1200, 0.08, 'sawtooth', 0.09, 180);
+      } else {
         w.snap--;
         if (w.horiz && Math.abs((player.y + 7) - w.pos) < 10) hitB2Player(5);
         if (!w.horiz && Math.abs((player.x + 7) - w.pos) < 10) hitB2Player(5);
@@ -136,27 +148,24 @@ function drawBoss2() {
     ctx.fillStyle = '#444'; ctx.fillRect(312, 230, 16, 150);
     ctx.fillStyle = '#ff0'; ctx.fillRect(b2BarX, 225, 6, 160);
   } else if (state === 'BOSS2_DODGE') {
-    // Draw Sniper Lasers & Bullets
     ctx.strokeStyle = 'rgba(255, 80, 0, 0.6)'; ctx.lineWidth = 1;
     b2Lasers.forEach(function(l) { ctx.beginPath(); ctx.moveTo(l.x, l.y); ctx.lineTo(l.tx, l.ty); ctx.stroke(); });
     ctx.fillStyle = spare ? '#ff0' : '#ffaa00';
     b2Bullets.forEach(function(b) { ctx.fillRect(b.x, b.y, 7, 7); });
 
-    // Draw Guard Body Warning & Massive Thrown Guard Sprite (boss1.png)
     b2Guards.forEach(function(g) {
       if (g.warn > 0) {
-        ctx.fillStyle = 'rgba(255, 50, 50, 0.25)'; ctx.fillRect(g.x, 222, g.w, 166);
-        ctx.fillStyle = '#f33'; ctx.font = 'bold 22px Courier New'; ctx.fillText('!', g.x + 40, 310);
+        ctx.fillStyle = 'rgba(255, 40, 40, 0.35)'; ctx.fillRect(g.x, 222, g.w, 166);
+        ctx.fillStyle = '#ff0'; ctx.font = 'bold 26px Courier New'; ctx.fillText('!', g.x + 38, 312);
       } else {
         if (enemyImg.complete && enemyImg.naturalWidth) ctx.drawImage(enemyImg, g.x, g.y, g.w, g.h);
         else { ctx.fillStyle = '#ccc'; ctx.fillRect(g.x, g.y, g.w, g.h); }
       }
     });
 
-    // Draw Whiplashes
     b2Whips.forEach(function(w) {
       if (w.warn > 0) {
-        ctx.strokeStyle = 'rgba(255, 40, 40, 0.55)'; ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 40, 40, 0.65)'; ctx.lineWidth = 2;
         ctx.beginPath();
         if (w.horiz) { ctx.moveTo(222, w.pos); ctx.lineTo(418, w.pos); }
         else { ctx.moveTo(w.pos, 222); ctx.lineTo(w.pos, 388); }
@@ -171,7 +180,6 @@ function drawBoss2() {
       }
     });
 
-    // Draw Player Heart
     if (Math.floor(player.invuln / 4) % 2 === 0) {
       if (heartImg.complete && heartImg.naturalWidth) ctx.drawImage(heartImg, player.x, player.y, 14, 14);
       else { ctx.fillStyle = '#f00'; ctx.fillRect(player.x, player.y, 14, 14); }

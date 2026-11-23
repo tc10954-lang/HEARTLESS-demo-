@@ -1,4 +1,4 @@
-var throneWalker = { x: 308, y: 420, speed: 2.5 }, throneFrame = 0, killedBoss = false, dialogStep = 0;
+var throneWalker = { x: 308, y: 420, speed: 2.5 }, throneFrame = 0, killedBoss = false, dialogStep = 0, auraTick = 0;
 var kingSceneImg = new Image(); kingSceneImg.src = './boss2scene.png';
 
 function drawGoldBucket(bx, by) {
@@ -9,6 +9,7 @@ function drawGoldBucket(bx, by) {
 }
 
 function updateThroneScene() {
+  auraTick += 0.08;
   if (state === 'THRONE_WALK') {
     var moving = false;
     if (keys['ArrowLeft'] && throneWalker.x > 250) { throneWalker.x -= throneWalker.speed; moving = true; }
@@ -44,12 +45,31 @@ function drawThroneScene() {
   ctx.fillStyle = '#8b6508'; ctx.fillRect(275, 35, 90, 100);
   ctx.fillStyle = '#ffd700'; ctx.fillRect(282, 42, 76, 85);
 
+  // Dark Shadow Aura (Makes fully black sprite stand out with a pale rim & black void flames)
+  var isFinalLine = (state === 'KING_DIALOGUE' && dialogStep >= 4);
+  var pulse = Math.sin(auraTick * (isFinalLine ? 2.5 : 1)) * (isFinalLine ? 12 : 6);
+  var grad = ctx.createRadialGradient(320, 95, 18, 320, 95, (isFinalLine ? 105 : 85) + pulse);
+  grad.addColorStop(0, isFinalLine ? 'rgba(255, 80, 80, 0.85)' : 'rgba(220, 200, 255, 0.75)');
+  grad.addColorStop(0.35, 'rgba(0, 0, 0, 0.92)');
+  grad.addColorStop(0.75, 'rgba(25, 0, 40, 0.65)');
+  grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(205, 5, 230, 185);
+
+  // Rising Black Shadow Wisps
+  for (var s = 0; s < 10; s++) {
+    var sx = 272 + ((s * 13 + Math.floor(auraTick * 10)) % 96);
+    var sy = 140 - ((Math.floor(auraTick * 30) + s * 17) % 105);
+    ctx.fillStyle = s % 3 === 0 ? (isFinalLine ? '#ff3333' : '#9966ff') : '#000';
+    ctx.fillRect(sx, sy, 6, 8);
+  }
+
   // Custom King Cutscene Sprite (boss2scene.png)
   if (kingSceneImg.complete && kingSceneImg.naturalWidth) {
     ctx.drawImage(kingSceneImg, 276, 48, 88, 96);
   } else {
-    ctx.fillStyle = '#70081c'; ctx.fillRect(292, 85, 56, 48);
-    ctx.fillStyle = '#ddd'; ctx.fillRect(302, 72, 36, 24);
+    ctx.fillStyle = '#000'; ctx.fillRect(292, 85, 56, 48);
+    ctx.fillRect(302, 72, 36, 24);
     ctx.fillStyle = '#ff0'; ctx.fillRect(302, 58, 36, 14);
   }
 
@@ -69,7 +89,6 @@ function drawThroneScene() {
       '* "I rule this kingdom, whether you like it or not."',
       '* "Anyway, you must DIE."'
     ];
-    var isFinalLine = dialogStep >= lines.length - 1;
 
     ctx.fillStyle = '#000'; ctx.fillRect(45, 320, 550, 125);
     ctx.strokeStyle = isFinalLine ? '#f33' : '#ffd700'; ctx.lineWidth = 4;
